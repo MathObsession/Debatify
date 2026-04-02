@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debatify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+        box-sizing: border-box;
+        font-family: 'Outfit'; 
+        }
+        body {
+            background: #f0f2f5; 
+            margin: 0; padding: 20px; 
+        }
+        .container {
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            padding: 20px; 
+        }
+        h1 { 
+            margin-top: 0;
+            text-align: center; 
+            color: #1a73e8; 
+        }
+        .mode-selector, .duration-selector {
+             margin-bottom: 20px; 
+        }
+        button, .mode-btn, .duration-btn {
+            background: #e8f0fe;
+            border: none;
+            padding: 10px 16px; 
+            border-radius: 24px; 
+            margin: 4px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+
+        button.active, .mode-btn.active, .duration-btn.active {
+            background: #1a73e8;
+            color: white; 
+        }
+        button:hover {
+            background: #d2e3fc; 
+        }
+        .debate-screen {
+            display: none; 
+        }
+        .timer { 
+            font-size: 2rem;
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0; 
+        }
+        .transcript {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 12px;
+            height: 300px;
+            overflow-y: auto;
+            margin: 16px 0; 
+        }
+        .user-msg {
+            background: #e8f0fe;
+            padding: 8px 12px;
+            border-radius: 18px;
+            margin: 8px 0;
+            text-align: right; 
+
+            }
+        .ai-msg {
+            background: #f1f3f4;
+            padding: 8px 12px;
+            border-radius: 18px;
+            margin: 8px 0; 
+
+            }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+
+            }
+        .mic-btn {
+            background: #1a73e8;
+            color: white;
+            font-size: 1.2rem;
+            padding: 12px 24px;
+            border-radius: 40px; 
+
+            }
+        .mic-btn.recording { 
+            background: #ea4335;
+            animation: pulse 1s infinite; 
+
+        }
+        @keyframes pulse {
+            0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } 
+
+        }
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 20px; 
+
+        }
+        .summary {
+            background: #f1f3f4;
+            padding: 16px; 
+            border-radius: 12px;
+            margin: 20px 0; 
+            white-space: pre-wrap; 
+            text-align: left; 
+
+        }
+        .hidden {
+            display: none; 
+
+        }
+        select, input {
+            padding: 8px; 
+            margin: 4px;
+            border-radius: 8px;
+            border: 1px solid #ccc; 
+
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <div id="setup-screen">
+        <h1>Debatify</h1>
+        <div class="mode-selector">
+            <h3>Select Mode</h3>
+            <button class="mode-btn" data-mode="casual">Casual</button>
+            <button class="mode-btn" data-mode="pro">Pro</button>
+            <button class="mode-btn" data-mode="judging">Judging</button>
+            <button class="mode-btn" data-mode="coach">Coach</button>
+        </div>
+        <div class="duration-selector">
+            <h3>Duration (minutes)</h3>
+            <button class="duration-btn" data-duration="5">5</button>
+            <button class="duration-btn" data-duration="10">10</button>
+            <button class="duration-btn" data-duration="25">25</button>
+            <button class="duration-btn custom-duration">Custom</button>
+            <input type="number" id="custom-duration" min="1" max="60" placeholder="Minutes" class="hidden">
+        </div>
+        <div class="topic-selector">
+            <h3>Optional Topic</h3>
+            <input type="text" id="topic" placeholder="e.g., Should we ban plastic?">
+        </div>
+        <button id="start-btn" style="display: block; width: 100%; margin-top: 20px;">Start Debate</button>
+    </div>
+
+    <div id="debate-screen" class="debate-screen">
+        <div class="timer" id="timer">00:00</div>
+        <div class="transcript" id="transcript"></div>
+        <div class="controls">
+            <button id="mic-btn" class="mic-btn">🎤 Speak</button>
+            <button id="end-btn">End Session</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2>Session Summary</h2>
+        <div class="summary" id="summary-text"></div>
+        <button id="new-session-btn">Start New Session</button>
+    </div>
+</div>
+
+<script>
+    const setupScreen = document.getElementById('setup-screen');
+    const debateScreen = document.getElementById('debate-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const startBtn = document.getElementById('start-btn');
+    const micBtn = document.getElementById('mic-btn');
+    const endBtn = document.getElementById('end-btn');
+    const newSessionBtn = document.getElementById('new-session-btn');
+    const timerDisplay = document.getElementById('timer');
+    const transcriptDiv = document.getElementById('transcript');
+    const summaryDiv = document.getElementById('summary-text');
+
+    let selectedMode = 'casual';
+    let selectedDuration = 10;
+    let topic = '';
+    let timeRemaining = 0; 
+    let timerInterval = null;
+    let isRecording = false;
+    let recognition = null;
+    let conversationHistory = [];
+
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            addUserMessage(text);
+            sendToBackend(text);
+            stopRecording();
+        };
+        recognition.onerror = (event) => {
+            console.error('Speech error:', event.error);
+            stopRecording();
+            if (event.error === 'not-allowed') alert('Microphone access denied.');
+            else alert('Could not understand. Please try again.');
+        };
+        recognition.onend = () => { stopRecording(); };
+    } else {
+        alert('Web Speech API not supported. Use Chrome or Safari.');
+    }
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedMode = btn.dataset.mode;
+        });
+    });
+    document.querySelector('.mode-btn[data-mode="casual"]').classList.add('active');
+
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.classList.contains('custom-duration')) {
+                const customInput = document.getElementById('custom-duration');
+                customInput.classList.toggle('hidden');
+                if (!customInput.classList.contains('hidden')) {
+                    customInput.focus();
+                    customInput.value = '';
+                }
+                return;
+            }
+            document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedDuration = parseInt(btn.dataset.duration);
+            document.getElementById('custom-duration').classList.add('hidden');
+        });
+    });
+    document.getElementById('custom-duration').addEventListener('change', (e) => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 60) val = 60;
+        selectedDuration = val;
+        document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.duration-btn.custom-duration').classList.add('active');
+    });
+
+    // Start session
+    startBtn.addEventListener('click', async () => {
+        topic = document.getElementById('topic').value;
+        // Validate custom duration
+        const customInput = document.getElementById('custom-duration');
+        if (!customInput.classList.contains('hidden')) {
+            let val = parseInt(customInput.value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 60) val = 60;
+            selectedDuration = val;
+        }
+        // Call backend to initialize session
+        const res = await fetch('/start_session', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ mode: selectedMode, duration: selectedDuration, topic: topic })
+        });
+        if (res.ok) {
+            // Switch UI
+            setupScreen.style.display = 'none';
+            debateScreen.style.display = 'block';
+            resultScreen.style.display = 'none';
+            // Reset display
+            transcriptDiv.innerHTML = '';
+            conversationHistory = [];
+            timeRemaining = selectedDuration * 60;
+            updateTimerDisplay();
+            startTimer();
+        } else {
+            alert('Failed to start session');
+        }
+    });
+
+    // Timer logic
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                endSession();
+            } else {
+                timeRemaining--;
+                updateTimerDisplay();
+                // Optional: warn when 1 minute left
+                if (timeRemaining === 60) {
+                    addAIMessage("⚠️ One minute remaining. Let's wrap up.");
+                }
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const mins = Math.floor(timeRemaining / 60);
+        const secs = timeRemaining % 60;
+        timerDisplay.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+
+    // Voice recording
+    function startRecording() {
+        if (!recognition) return;
+        recognition.start();
+        isRecording = true;
+        micBtn.classList.add('recording');
+        micBtn.textContent = '🔴 Recording...';
+    }
+
+    function stopRecording() {
+        if (recognition) recognition.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        micBtn.textContent = '🎤 Speak';
+    }
+
+    micBtn.addEventListener('click', () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
+
+    // Send user message to backend
+    async function sendToBackend(userText) {
+        micBtn.disabled = true;
+        try {
+            const res = await fetch('/debate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_text: userText })
+            });
+            const data = await res.json();
+            if (data.response) {
+                addAIMessage(data.response);
+                // Speak the response
+                speakText(data.response);
+            } else if (data.error) {
+                addAIMessage(`[Error] ${data.error}`);
+            }
+        } catch (err) {
+            addAIMessage(`[Error] Could not reach server.`);
+        } finally {
+            micBtn.disabled = false;
+        }
+    }
+
+    function addUserMessage(text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'user-msg';
+        msgDiv.textContent = `You: ${text}`;
+        transcriptDiv.appendChild(msgDiv);
+        transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+    }
+
+    function addAIMessage(text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'ai-msg';
+        msgDiv.textContent = `AI: ${text}`;
+        transcriptDiv.appendChild(msgDiv);
+        transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+    }
+
+    // TTS using Web Speech API
+    function speakText(text) {
+        if (!window.speechSynthesis) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;  // slightly slower for clarity
+        window.speechSynthesis.cancel(); // stop any ongoing speech
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // End session
+    async function endSession() {
+        if (timerInterval) clearInterval(timerInterval);
+        micBtn.disabled = true;
+        endBtn.disabled = true;
+        // Call backend for summary
+        const res = await fetch('/end_session', { method: 'POST' });
+        const data = await res.json();
+        summaryDiv.textContent = data.summary || "No summary available.";
+        // Show result screen
+        debateScreen.style.display = 'none';
+        resultScreen.style.display = 'block';
+        // Reset
+        micBtn.disabled = false;
+        endBtn.disabled = false;
+    }
+
+    endBtn.addEventListener('click', endSession);
+
+    // New session
+    newSessionBtn.addEventListener('click', () => {
+        // Reset UI
+        setupScreen.style.display = 'block';
+        debateScreen.style.display = 'none';
+        resultScreen.style.display = 'none';
+        // Reset selected mode/duration to defaults
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.mode-btn[data-mode="casual"]').classList.add('active');
+        document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.duration-btn[data-duration="10"]').classList.add('active');
+        selectedDuration = 10;
+        document.getElementById('custom-duration').classList.add('hidden');
+        document.getElementById('topic').value = '';
+    });
+</script>
+</body>
+</html>

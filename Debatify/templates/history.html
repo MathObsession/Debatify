@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debatify - History</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+<style>
+    body { background: #020202; color: #fff; font-family: 'Outfit'; margin: 0; padding: 0; }
+    .menu-bar { background: #111; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+    .menu-item { color: #fff; text-decoration: none; margin-left: 16px; }
+    .container { max-width: 1000px; margin: 36px auto; padding: 20px; background: #111; border-radius: 12px; box-shadow: 0 0 16px rgba(0,0,0,.4); }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    th, td { padding: 12px; border: 1px solid #333; text-align: left; }
+</style>
+</head>
+<body>
+<div class="menu-bar">
+    <div class="logo">Debatify</div>
+    <div>
+        <a href="/dashboard" class="menu-item">Home</a>
+        <a href="/profile" class="menu-item">Profile</a>
+        <a href="/logout" class="menu-item">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <h1>Debate History</h1>
+    <table>
+        <tr><th>#</th><th>Topic</th><th>Mode</th><th>Duration</th><th>Start</th><th>End</th><th>Result</th><th>Score</th></tr>
+        {% for s in sessions %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ s['topic'] }}</td>
+            <td>{{ s['mode'] }}</td>
+            <td>{{ s['duration'] }} min</td>
+            <td>{{ s['start_time'] }}</td>
+            <td>{{ s['end_time'] or '-' }}</td>
+            <td>{{ s['result'] or '-' }}</td>
+            <td>{{ s['score'] or 0 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>

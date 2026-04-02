@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "mode": "casual",
+    "duration": 0,
+    "topic": "apples are soft",
+    "start_time": "2026-04-02T20:14:12.821809",
+    "end_time": "2026-04-02T20:14:14.225351",
+    "result": "completed",
+    "score": 0
+  },
+  {
+    "id": 2,
+    "user_id": 1,
+    "mode": "casual",
+    "duration": 1,
+    "topic": "hands are more important than legs",
+    "start_time": "2026-04-02T20:15:25.438445",
+    "end_time": null,
+    "result": null,
+    "score": 0
+  },
+  {
+    "id": 3,
+    "user_id": 1,
+    "mode": "casual",
+    "duration": 1,
+    "topic": "hands are more important than legs",
+    "start_time": "2026-04-02T20:15:25.443516",
+    "end_time": "2026-04-02T20:16:26.703749",
+    "result": "completed",
+    "score": 0
+  },
+  {
+    "id": 4,
+    "user_id": 1,
+    "mode": "casual",
+    "duration": 1,
+    "topic": "Social media does more harm than good.",
+    "start_time": "2026-04-02T20:15:25.447299",
+    "end_time": null,
+    "result": null,
+    "score": 0
+  }
+]

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debatify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            box-sizing: border-box;
+            font-family: 'Outfit'; 
+        }
+        body {
+            background: #020202; 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #020202;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .auth-btn {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .auth-btn:hover {
+            background: #ffffff;
+            color: #020202;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+        h1 { 
+            color: #000000; 
+            font-size: 71px;
+            font-weight: bold; 
+            background-color: #fcfcfc;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .subheading {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 40px;
+        }
+        .join-text {
+            color: #1557b0;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .get-started-btn {
+            background: black;
+            color: rgb(255, 255, 255);
+            border: solid;
+            border-width: 1.5px;
+            border-color: #1557b0;
+            padding: 16px 32px; 
+            border-radius: 20px; 
+            font-size: 1.2rem;
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        .get-started-btn:hover {
+            background: #ffffff;
+            color: #000000; 
+            border-width: 2.5px;
+        }
+        p{
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Debatify</div>
+        <div class="auth-buttons">
+            {% if session.user %}
+                <span style="color: #ffffff; margin-right: 10px;">Welcome, {{ session.user }}</span>
+                <button class="auth-btn" onclick="window.location.href='/logout'">Logout</button>
+            {% else %}
+                <button class="auth-btn" onclick="window.location.href='/login'">Sign In</button>
+                <button class="auth-btn" onclick="window.location.href='/register'">Sign Up</button>
+            {% endif %}
+        </div>
+    </div>
+    <div class="container">
+        <div>
+            <h1>Want to debate?</h1>
+            <p class="subheading">but have no one to debate with</p>
+            <div class="join-text">Join Debatify now</div>
+        </div>
+    </div>
+</body>
+</html>

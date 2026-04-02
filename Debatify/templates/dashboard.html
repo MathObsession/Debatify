@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debatify - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            box-sizing: border-box;
+            font-family: 'Outfit'; 
+        }
+        body {
+            background: #020202; 
+            margin: 0; 
+            padding: 0;
+            color: #ffffff;
+        }
+        .menu-bar {
+            background: #111111;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .menu-items {
+            display: flex;
+            gap: 20px;
+        }
+        .menu-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            background: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        .start-btn {
+            background: #1557b0;
+            color: #ffffff;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .start-btn:hover {
+            background: #0d4a8a;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="logo">Debatify</div>
+        <div class="menu-items">
+            <a href="/dashboard" class="menu-item">Home</a>
+            <a href="/profile" class="menu-item">Profile</a>
+            <a href="/history" class="menu-item">History</a>
+            <a href="/logout" class="menu-item">Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Start a debate Now?</h1>
+        <button class="start-btn" onclick="window.location.href='/modes'">Start Debate</button>
+    </div>
+</body>
+</html>

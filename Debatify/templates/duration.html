@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debatify - Select Duration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            box-sizing: border-box;
+            font-family: 'Outfit'; 
+        }
+        body {
+            background: #020202; 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: #ffffff;
+        }
+        .menu-bar {
+            background: #111111;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .menu-items {
+            display: flex;
+            gap: 20px;
+        }
+        .menu-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            background: #333;
+        }
+        .container {
+            max-width: 600px; 
+            margin: 50px auto; 
+            background: #111111; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+            padding: 40px; 
+            text-align: center;
+        }
+        h1 { 
+            margin-top: 0;
+            color: #ffffff; 
+        }
+        .duration-btn {
+            background: #222;
+            border: 1px solid #333;
+            padding: 16px 24px; 
+            border-radius: 24px; 
+            margin: 8px;
+            cursor: pointer; 
+            transition: 0.2s;
+            font-size: 1.1rem;
+            width: 120px;
+            color: #ffffff;
+        }
+        .duration-btn:hover {
+            background: #333; 
+        }
+        .duration-btn.selected {
+            background: #1557b0;
+            color: white;
+        }
+        .custom-input {
+            display: none;
+            margin-top: 10px;
+        }
+        .custom-input input {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #222;
+            color: #ffffff;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="logo">Debatify</div>
+        <div class="menu-items">
+            <a href="/dashboard" class="menu-item">Home</a>
+            <a href="/profile" class="menu-item">Profile</a>
+            <a href="/history" class="menu-item">History</a>
+            <a href="/logout" class="menu-item">Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Select Debate Duration</h1>
+        <button class="duration-btn" data-duration="5">5 min</button>
+        <button class="duration-btn" data-duration="10">10 min</button>
+        <button class="duration-btn" data-duration="30">30 min</button>
+        <button class="duration-btn custom-btn">Custom</button>
+        <div class="custom-input">
+            <input type="number" id="custom-duration" min="1" max="60" placeholder="Minutes">
+        </div>
+        <br><br>
+        <button id="next-btn" style="background: #1557b0; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer;">Next</button>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        let selectedDuration = null;
+
+        document.querySelectorAll('.duration-btn').forEach(btn => {
+            if (btn.classList.contains('custom-btn')) return;
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedDuration = btn.dataset.duration;
+                document.querySelector('.custom-input').style.display = 'none';
+            });
+        });
+
+        document.querySelector('.custom-btn').addEventListener('click', () => {
+            document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelector('.custom-btn').classList.add('selected');
+            document.querySelector('.custom-input').style.display = 'block';
+            document.getElementById('custom-duration').focus();
+        });
+
+        document.getElementById('custom-duration').addEventListener('input', (e) => {
+            selectedDuration = e.target.value;
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (selectedDuration) {
+                window.location.href = `/topic?mode=${mode}&duration=${selectedDuration}`;
+            } else {
+                alert('Please select a duration.');
+            }
+        });
+    </script>
+</body>
+</html>

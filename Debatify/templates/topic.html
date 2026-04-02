@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debatify - Select Topic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            box-sizing: border-box;
+            font-family: 'Outfit'; 
+        }
+        body {
+            background: #020202; 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: #ffffff;
+        }
+        .menu-bar {
+            background: #111111;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .menu-items {
+            display: flex;
+            gap: 20px;
+        }
+        .menu-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            background: #333;
+        }
+        .container {
+            max-width: 600px; 
+            margin: 50px auto; 
+            background: #111111; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+            padding: 40px; 
+            text-align: center;
+        }
+        h1 { 
+            margin-top: 0;
+            color: #ffffff; 
+        }
+        .topic-btn {
+            background: #222;
+            border: 1px solid #333;
+            padding: 16px 24px; 
+            border-radius: 24px; 
+            margin: 8px;
+            cursor: pointer; 
+            transition: 0.2s;
+            font-size: 1.1rem;
+            width: 200px;
+            color: #ffffff;
+        }
+        .topic-btn:hover {
+            background: #333; 
+        }
+        .topic-btn.selected {
+            background: #1557b0;
+            color: white;
+        }
+        .topic-input {
+            display: none;
+            margin-top: 20px;
+        }
+        .topic-input form {
+            margin: 0;
+        }
+        .topic-input input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #222;
+            color: #ffffff;
+            width: 100%;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="logo">Debatify</div>
+        <div class="menu-items">
+            <a href="/dashboard" class="menu-item">Home</a>
+            <a href="/profile" class="menu-item">Profile</a>
+            <a href="/history" class="menu-item">History</a>
+            <a href="/logout" class="menu-item">Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Select Debate Topic</h1>
+        <button class="topic-btn" data-topic="enter">Enter Topic</button>
+        <button class="topic-btn" data-topic="ai">Custom AI Topic</button>
+        <div class="topic-input">
+            <form action="#" onsubmit="return false">
+                <input type="text" id="topic-text" placeholder="Enter your debate topic...">
+            </form>
+        </div>
+        <br><br>
+        <button id="start-btn" style="background: #1557b0; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer;">Start Debate</button>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        const duration = urlParams.get('duration');
+        let selectedTopicType = null;
+        let topic = '';
+
+        document.querySelectorAll('.topic-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedTopicType = btn.dataset.topic;
+                if (selectedTopicType === 'enter') {
+                    document.querySelector('.topic-input').style.display = 'block';
+                    document.getElementById('topic-text').focus();
+                } else {
+                    document.querySelector('.topic-input').style.display = 'none';
+                    topic = 'ai'; // placeholder for AI generated
+                }
+            });
+        });
+
+        document.querySelector('.topic-input form').addEventListener('submit', (e) => {
+            e.preventDefault();
+        });
+
+        document.getElementById('topic-text').addEventListener('input', (e) => {
+            topic = e.target.value;
+        });
+
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            if (!selectedTopicType) {
+                alert('Please select a topic option.');
+                return;
+            }
+            if (selectedTopicType === 'enter' && !topic.trim()) {
+                alert('Please enter a topic.');
+                return;
+            }
+            if (selectedTopicType === 'ai') {
+                // Generate AI topic
+                try {
+                    const res = await fetch('/generate_topic');
+                    const data = await res.json();
+                    topic = data.topic;
+                } catch (err) {
+                    alert('Failed to generate topic.');
+                    return;
+                }
+            }
+            // Start session
+            const res = await fetch('/start_session', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ mode: mode, duration: parseInt(duration), topic: topic })
+            });
+            if (res.ok) {
+                window.location.href = '/debate';
+            } else {
+                alert('Failed to start session.');
+            }
+        });
+    </script>
+</body>
+</html>

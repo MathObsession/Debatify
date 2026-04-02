@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debatify - Debate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+        box-sizing: border-box;
+        font-family: 'Outfit'; 
+        }
+        body {
+            background: #020202; 
+            margin: 0; padding: 20px; 
+            color: #ffffff;
+        }
+        .menu-bar {
+            background: #111111;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            margin: -20px -20px 20px -20px;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .menu-items {
+            display: flex;
+            gap: 20px;
+        }
+        .menu-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            background: #333;
+        }
+        .container {
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: #111111; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+            padding: 20px; 
+        }
+        h1 { 
+            margin-top: 0;
+            text-align: center; 
+            color: #ffffff; 
+        }
+        .timer { 
+            font-size: 2rem;
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0; 
+        }
+        .transcript {
+            background: #222;
+            padding: 16px;
+            border-radius: 12px;
+            height: 300px;
+            overflow-y: auto;
+            margin: 16px 0; 
+        }
+        .user-msg {
+            background: #333;
+            padding: 8px 12px;
+            border-radius: 18px;
+            margin: 8px 0;
+            text-align: right; 
+
+            }
+        .ai-msg {
+            background: #444;
+            padding: 8px 12px;
+            border-radius: 18px;
+            margin: 8px 0; 
+
+            }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+
+            }
+        .mic-btn {
+            background: #1557b0;
+            color: white;
+            font-size: 1.2rem;
+            padding: 12px 24px;
+            border-radius: 40px; 
+            border: none;
+            cursor: pointer;
+
+            }
+        .mic-btn.recording { 
+            background: #ea4335;
+            animation: pulse 1s infinite; 
+
+        }
+        @keyframes pulse {
+            0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } 
+
+        }
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 20px; 
+
+        }
+        .summary {
+            background: #222;
+            padding: 16px; 
+            border-radius: 12px;
+            margin: 20px 0; 
+            white-space: pre-wrap; 
+            text-align: left; 
+
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="logo">Debatify</div>
+        <div class="menu-items">
+            <a href="/dashboard" class="menu-item">Home</a>
+            <a href="/profile" class="menu-item">Profile</a>
+            <a href="/history" class="menu-item">History</a>
+            <a href="/logout" class="menu-item">Logout</a>
+        </div>
+    </div>
+<div class="container" id="app">
+    <div id="debate-screen">
+        <h1>Debate in Progress</h1>
+        <div class="timer" id="timer">00:00</div>
+        <div class="transcript" id="transcript"></div>
+        <div class="controls">
+            <button id="mic-btn" class="mic-btn">🎤 Speak</button>
+            <button id="end-btn">End Session</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2>Session Summary</h2>
+        <div class="summary" id="summary-text"></div>
+        <button id="new-session-btn">Start New Session</button>
+    </div>
+</div>
+
+<script>
+    const debateScreen = document.getElementById('debate-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const micBtn = document.getElementById('mic-btn');
+    const endBtn = document.getElementById('end-btn');
+    const newSessionBtn = document.getElementById('new-session-btn');
+    const timerDisplay = document.getElementById('timer');
+    const transcriptDiv = document.getElementById('transcript');
+    const summaryDiv = document.getElementById('summary-text');
+
+    let timeRemaining = 0; 
+    let timerInterval = null;
+    let isRecording = false;
+    let recognition = null;
+
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            addUserMessage(text);
+            sendToBackend(text);
+            stopRecording();
+        };
+        recognition.onerror = (event) => {
+            console.error('Speech error:', event.error);
+            stopRecording();
+            if (event.error === 'not-allowed') alert('Microphone access denied.');
+            else alert('Could not understand. Please try again.');
+        };
+        recognition.onend = () => { stopRecording(); };
+    } else {
+        alert('Web Speech API not supported. Use Chrome or Safari.');
+    }
+
+    // Assume session is already started, get duration from backend or session
+    // For simplicity, we'll assume timeRemaining is set, but in practice, fetch from session
+    // Let's add a fetch to get session info
+    async function initDebate() {
+        try {
+            const res = await fetch('/get_session_info');
+            const data = await res.json();
+            timeRemaining = data.duration * 60;
+        } catch (err) {
+            timeRemaining = 600; // default 10 min
+        }
+        updateTimerDisplay();
+        startTimer();
+    }
+
+    initDebate();
+
+    // Timer logic
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                endSession();
+            } else {
+                timeRemaining--;
+                updateTimerDisplay();
+                if (timeRemaining === 60) {
+                    addAIMessage("⚠️ One minute remaining. Let's wrap up.");
+                }
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const mins = Math.floor(timeRemaining / 60);
+        const secs = timeRemaining % 60;
+        timerDisplay.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+
+    // Voice recording
+    function startRecording() {
+        if (!recognition) return;
+        recognition.start();
+        isRecording = true;
+        micBtn.classList.add('recording');
+        micBtn.textContent = '🔴 Recording...';
+    }
+
+    function stopRecording() {
+        if (recognition) recognition.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        micBtn.textContent = '🎤 Speak';
+    }
+
+    micBtn.addEventListener('click', () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
+
+    // Send user message to backend
+    async function sendToBackend(userText) {
+        micBtn.disabled = true;
+        try {
+            const res = await fetch('/debate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_text: userText })
+            });
+            const data = await res.json();
+            if (data.response) {
+                addAIMessage(data.response);
+                speakText(data.response);
+            } else if (data.error) {
+                addAIMessage(`[Error] ${data.error}`);
+            }
+        } catch (err) {
+            addAIMessage(`[Error] Could not reach server.`);
+        } finally {
+            micBtn.disabled = false;
+        }
+    }
+
+    function addUserMessage(text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'user-msg';
+        msgDiv.textContent = `You: ${text}`;
+        transcriptDiv.appendChild(msgDiv);
+        transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+    }
+
+    function addAIMessage(text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'ai-msg';
+        msgDiv.textContent = `AI: ${text}`;
+        transcriptDiv.appendChild(msgDiv);
+        transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+    }
+
+    // TTS using Web Speech API
+    function speakText(text) {
+        if (!window.speechSynthesis) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // End session
+    async function endSession() {
+        if (timerInterval) clearInterval(timerInterval);
+        micBtn.disabled = true;
+        endBtn.disabled = true;
+        const res = await fetch('/end_session', { method: 'POST' });
+        const data = await res.json();
+        summaryDiv.textContent = data.summary || "No summary available.";
+        debateScreen.style.display = 'none';
+        resultScreen.style.display = 'block';
+        micBtn.disabled = false;
+        endBtn.disabled = false;
+    }
+
+    endBtn.addEventListener('click', endSession);
+
+    // New session
+    newSessionBtn.addEventListener('click', () => {
+        window.location.href = '/dashboard';
+    });
+</script>
+</body>
+</html>

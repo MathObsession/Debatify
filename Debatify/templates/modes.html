@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debatify - Select Mode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            box-sizing: border-box;
+            font-family: 'Outfit'; 
+        }
+        body {
+            background: #020202; 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: #ffffff;
+        }
+        .menu-bar {
+            background: #111111;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .menu-items {
+            display: flex;
+            gap: 20px;
+        }
+        .menu-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            background: #333;
+        }
+        .container {
+            max-width: 600px; 
+            margin: 50px auto; 
+            background: #111111; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+            padding: 40px; 
+            text-align: center;
+        }
+        h1 { 
+            margin-top: 0;
+            color: #ffffff; 
+        }
+        .mode-btn {
+            background: #222;
+            border: 1px solid #333;
+            padding: 16px 24px; 
+            border-radius: 24px; 
+            margin: 8px;
+            cursor: pointer; 
+            transition: 0.2s;
+            font-size: 1.1rem;
+            width: 200px;
+            color: #ffffff;
+        }
+        .mode-btn:hover {
+            background: #333; 
+        }
+        .mode-btn.selected {
+            background: #1557b0;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="logo">Debatify</div>
+        <div class="menu-items">
+            <a href="/dashboard" class="menu-item">Home</a>
+            <a href="/profile" class="menu-item">Profile</a>
+            <a href="/history" class="menu-item">History</a>
+            <a href="/logout" class="menu-item">Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Select Debate Mode</h1>
+        <button class="mode-btn" data-mode="casual">Casual</button>
+        <button class="mode-btn" data-mode="judging">Judging</button>
+        <button class="mode-btn" data-mode="coach">Coach</button>
+        <button class="mode-btn" data-mode="pro">Pro</button>
+        <br><br>
+        <button id="next-btn" style="background: #1557b0; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer;">Next</button>
+    </div>
+
+    <script>
+        let selectedMode = null;
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedMode = btn.dataset.mode;
+            });
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (selectedMode) {
+                window.location.href = `/duration?mode=${selectedMode}`;
+            } else {
+                alert('Please select a mode.');
+            }
+        });
+    </script>
+</body>
+</html>

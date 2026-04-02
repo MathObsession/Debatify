@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debatify - Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+<style>
+    body { background: #020202; color: #fff; font-family: 'Outfit'; margin: 0; padding: 0; }
+    .menu-bar { background: #111; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+    .menu-item { color: #fff; text-decoration: none; margin-left: 16px; }
+    .container { max-width: 1000px; margin: 36px auto; padding: 20px; background: #111; border-radius: 12px; box-shadow: 0 0 16px rgba(0,0,0,.4); }
+    .top { display: flex; gap: 24px; align-items: center; }
+    .avatar { width: 120px; height: 120px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+    .stats { flex: 1; }
+    .chart { margin-top: 24px; }
+    .streak { margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+    th, td { padding: 12px; border: 1px solid #333; }
+</style>
+</head>
+<body>
+<div class="menu-bar">
+    <div class="logo">Debatify</div>
+    <div>
+        <a href="/dashboard" class="menu-item">Home</a>
+        <a href="/history" class="menu-item">History</a>
+        <a href="/logout" class="menu-item">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <div class="top">
+        <div class="avatar">
+            {% if user['profile_pic'] %}
+                <img src="/static/uploads/{{ user['profile_pic'] }}" width="120" height="120" style="border-radius:50%; object-fit:cover;" />
+            {% else %}
+                {{ user['username'][0] | upper }}
+            {% endif %}
+        </div>
+        <div class="stats">
+            <h2>{{ user['username'] }}</h2>
+            <p>Email: {{ user['email'] }}</p>
+            <p>Accuracy: {{ accuracy }}%</p>
+        </div>
+        <form action="/upload_profile" method="post" enctype="multipart/form-data">
+            <input type="file" name="profile_pic" accept="image/*" required>
+            <button type="submit">Upload Profile Picture</button>
+        </form>
+    </div>
+    <div class="chart">
+        <h3>Performance History</h3>
+        <canvas id="performanceChart" width="900" height="300"></canvas>
+    </div>
+    <div class="streak">
+        <h3>Current streak:</h3>
+        <p>{{ streak }} days</p>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const sessions = {{ sessions | tojson }};
+    const labels = sessions.map((s,i)=>'S'+(i+1));
+    const scores = sessions.map(s=>s.score || 0);
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Debate score', data: scores, borderColor: '#1a73e8', tension: 0.2, fill: false }]}
+    });
+</script>
+</body>
+</html>
